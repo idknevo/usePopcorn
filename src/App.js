@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import Loader from "./Loader";
-import ErrorMessage from "./ErrorMessage";
-import StarRating from "./StarRating";
-import Arrow from "./Arrow";
+import Loader from "./components/Loader";
+import ErrorMessage from "./components/ErrorMessage";
+import StarRating from "./components/StarRating";
+import Arrow from "./components/Arrow";
+import NavBar from "./components/NavBar";
 
 const average = (arr) =>
   arr.reduce((sum, cur, _, arr) => sum + cur / arr.length, 0);
@@ -12,7 +13,9 @@ const API_KEY = "572b2442";
 export default function App() {
   const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
+  const [watched, setWatched] = useState(function () {
+    return JSON.parse(localStorage.getItem("watched"));
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
@@ -20,6 +23,7 @@ export default function App() {
   function handleSelectMovie(id) {
     setSelectedId(id === selectedId ? null : id);
   }
+
   function handleCloseMovie() {
     setSelectedId(null);
   }
@@ -31,6 +35,10 @@ export default function App() {
   function handleDeleteWatched(id) {
     setWatched(watched.filter((movie) => movie.imdbID !== id));
   }
+
+  useEffect(() => {
+    localStorage.setItem("watched", JSON.stringify(watched));
+  }, [watched]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -109,16 +117,7 @@ export default function App() {
   );
 }
 
-function NavBar({ children }) {
-  return (
-    <nav className="nav-bar">
-      <Logo />
-      {children}
-    </nav>
-  );
-}
-
-function Logo() {
+export function Logo() {
   return (
     <div className="logo">
       <span role="img">🍿</span>
@@ -148,6 +147,7 @@ function NumOfResults({ movies }) {
 function Main({ children }) {
   return <main className="main">{children}</main>;
 }
+
 function Box({ children }) {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -161,20 +161,6 @@ function Box({ children }) {
   );
 }
 
-// function ListBox({ children }) {
-//   const [isOpen1, setIsOpen1] = useState(true);
-//   return (
-//     <div className="box">
-//       <button
-//         className="btn-toggle"
-//         onClick={() => setIsOpen1((open) => !open)}
-//       >
-//         {isOpen1 ? "–" : "+"}
-//       </button>
-//       {isOpen1 && children}
-//     </div>
-//   );
-// }
 function MoviesList({ movies, onClickMovie, selectedId }) {
   return (
     <ul className="list list-movies">
@@ -347,28 +333,6 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     </div>
   );
 }
-
-// function WatchedBox() {
-//   const [watched, setWatched] = useState(tempWatchedData);
-//   const [isOpen2, setIsOpen2] = useState(true);
-
-//   return (
-//     <div className="box">
-//       <button
-//         className="btn-toggle"
-//         onClick={() => setIsOpen2((open) => !open)}
-//       >
-//         {isOpen2 ? "–" : "+"}
-//       </button>
-//       {isOpen2 && (
-//         <>
-//           <WatchedSummary watched={watched} />
-//           <WatchedMoviesList watched={watched} />
-//         </>
-//       )}
-//     </div>
-//   );
-// }
 
 function WatchedSummary({ watched }) {
   const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
